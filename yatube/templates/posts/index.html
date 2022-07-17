@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% block title %} Последние обновления на сайте {% endblock %}
-{% block header %} Последние обновления на сайте{% endblock %}
 {% block content %}
-  {% include 'posts/includes/switcher.html' %}
+  {% include 'includes/switcher.html' %}
   <div class="container py-5"> 
   {% for post in page_obj %}
     {% include 'includes/post.html' %} 

@@ -38,8 +38,8 @@ class PostPagesTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def setUp(self):
         self.authorized_client = Client()
@@ -105,7 +105,7 @@ class PostPagesTest(TestCase):
         """После заполнения формы комментарий добавляется на страницу"""
         comments_count = Comment.objects.count()
         post_pk = self.post.pk
-        form_data = {'text': 'Тестовый комментарий'}
+        form_data = {'text': 'Другой тестовый комментарий'}
 
         self.authorized_client.post(
             reverse('posts:add_comment', kwargs={'pk': post_pk}),
@@ -114,3 +114,5 @@ class PostPagesTest(TestCase):
         )
 
         self.assertEqual(Comment.objects.count(), comments_count + 1)
+        self.assertTrue(Comment.objects.filter(
+            text='Другой тестовый комментарий').exists())

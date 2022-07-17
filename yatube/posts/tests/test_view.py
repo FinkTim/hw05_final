@@ -56,8 +56,8 @@ class PostPagesTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def setUp(self):
         cache.clear()
@@ -111,7 +111,7 @@ class PostPagesTest(TestCase):
 
     def test_create_post_show_correct_context(self):
         """Шаблон create_post сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('posts:post_create'))
+        response = self.authorized_client.get(reverse(self.post_create))
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
@@ -338,6 +338,7 @@ class FollowTest(TestCase):
             user=cls.follower,
             author=cls.following
         )
+        cls.follow_index = 'posts:follow_index'
 
     def setUp(self):
         cache.clear()
@@ -360,6 +361,8 @@ class FollowTest(TestCase):
             kwargs={'username': self.user_2.username}
         ))
         self.assertEqual(Follow.objects.count(), follow_count + 1)
+        self.assertTrue(Follow.objects.filter(
+            user=self.user, author=self.user_2).exists())
 
     def test_profile_unfollow(self):
         """Авторизованный пользователь может отписываться
@@ -371,17 +374,20 @@ class FollowTest(TestCase):
             kwargs={'username': self.following.username}
         ))
         self.assertEqual(Follow.objects.count(), follow_count - 1)
+        self.assertFalse(Follow.objects.filter(
+            user=self.follower, author=self.following).exists())
 
     def test_new_post_appear_for_follower(self):
         """Новый пост появляется для подписчика на странцие follow"""
-        response = self.client_follower.get(reverse('posts:follow_index'))
+        response = self.client_follower.get(reverse(self.follow_index))
         page_obj = response.context['page_obj']
 
         self.assertTrue(len(page_obj) == 1)
+        self.assertEqual(page_obj[0].text, 'Тестовый текст')
 
     def test_new_post_doesnt_appear_for_unfollower(self):
         """Новый пост не появляется для других на странцие follow"""
-        response = self.client_user.get(reverse('posts:follow_index'))
+        response = self.client_user.get(reverse(self.follow_index))
         page_obj = response.context['page_obj']
 
         self.assertTrue(len(page_obj) == 0)
